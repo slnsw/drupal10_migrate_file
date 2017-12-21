@@ -15,12 +15,12 @@ use Drupal\file\Entity\File;
  * place to properly handle the external uri on the file object (e.g. the Remote
  * Stream Wrapper module).
  *
- * @see https://www.drupal.org/project/remote_stream_wrapper
- *
  * Note that if you are using the filefield_paths module for the target file
  * field, the remote url will be downloaded when the parent entity is saved.
  * This is functionality built into filefield_paths. To avoid the download just
  * disable the filefield_paths option on the field settings.
+ *
+ * @see https://www.drupal.org/project/remote_stream_wrapper
  *
  * Available configuration keys:
  * - uid: (optional) The uid to attribute the file entity to. Defaults to 0

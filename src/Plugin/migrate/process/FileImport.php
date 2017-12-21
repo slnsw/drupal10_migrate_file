@@ -3,14 +3,19 @@
 namespace Drupal\migrate_file\Plugin\migrate\process;
 
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\StreamWrapper\LocalStream;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Plugin\migrate\process\FileCopy;
+use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 use Drupal\file\Entity\File;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\ConnectException;
 
 /**
  * Imports a file from an local or external source.
@@ -149,11 +154,20 @@ class FileImport extends FileCopy {
     $final_destination = '';
 
     // If we're in re-use mode, reuse the file if it exists
-    if ($this->getOverwriteMode() == FILE_EXISTS_ERROR && $this->isLocalUri($source) && is_file($destination)) {
+    if ($this->getOverwriteMode() == FILE_EXISTS_ERROR && $this->isLocalUri($destination) && is_file($destination)) {
       // Look for a file entity with the destination uri
       if ($files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(['uri' => $destination])) {
-        // @todo do we want to reuse actual file entites?
+        // Grab the first file entity with a matching uri
+        // @todo: Any logic for preference when there are multiple?
         $file = reset($files);
+        // Set to permanent if the file in the database is set to temporary.
+        // This means that the file was probably set to be removed during
+        // garbage collection, which we don't want to happen anymore since we're
+        // using it.
+        if (!$file->isTemporary()) {
+          $file->setPermanent();
+          $file->save();
+        }
         return $id_only ? $file->id() : ['target_id' => $file->id()];
       }
       else {
@@ -275,6 +289,9 @@ class FileImport extends FileCopy {
         return TRUE;
       }
       catch (ClientException $e) {
+        return FALSE;
+      }
+      catch (ConnectException $e) {
         return FALSE;
       }
     }

@@ -22,10 +22,10 @@ use GuzzleHttp\Exception\ClientException;
  *
  * Extends the regular file_import plugin but adds the following additional
  * optional configuration keys.
- * - alt: The alt attribute for the image
- * - title: The title attribute for the image
- * - width: The width of the image
- * - height: The height of the image
+ * - alt: The uid to attribute the file entity to. Defaults to 0
+ * - title: Boolean, if TRUE, move the file, otherwise copy the file.
+ * - width: The uid to attribute the file entity to. Defaults to 0
+ * - height: Boolean, if TRUE, move the file, otherwise copy the file.
  *
  * All of the above fields fields support copying destination values. These are
  * indicated by a starting @ sign. Values using @ must be wrapped in quotes.
