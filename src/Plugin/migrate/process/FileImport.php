@@ -33,7 +33,7 @@ use GuzzleHttp\Exception\ConnectException;
  *   'public://foo.txt'. To provide a directory path (to which the file is saved
  *   using its original name), a trailing slash *must* be used to differentiate
  *   it from being a filename. If no trailing slash is provided the path will be
- *   assumed to be the destination filename. Defaults to "public://"
+ *   assumed to be the destination filename. Defaults to "public://".
  * - uid: The uid to attribute the file entity to. Defaults to 0
  * - move: Boolean, if TRUE, move the file, otherwise copy the file. Only
  *   applies if the source file is local. If the source file is remote it will
@@ -44,8 +44,13 @@ use GuzzleHttp\Exception\ConnectException;
  *   location rather than move/copy/rename the file. Defaults to FALSE.
  * - skip_on_missing_source: (optional) Boolean, if TRUE, this field will be
  *   skipped if the source file is missing (either not available locally or 404
- *   if it's a remote file). Otherwise, the row will fail with an error.
- *   Defaults to FALSE
+ *   if it's a remote file). Otherwise, the row will fail with an error. Note
+ *   that if you are importing a lot of remove files, this check will greatly
+ *   reduce the speed of your import as it requires an http request per file to
+ *   check for existence. Defaults to FALSE.
+ * - skip_on_error: (optional) Boolean, if TRUE, this field will be skipped
+ *   if any error occurs during the file import (including missing source
+ *   files). Otherwise, the row will fail with an error. Defaults to FALSE
  * - id_only: (optional) Boolean, if TRUE, the process will return just the id
  *   instead of a entity reference array. Useful if you want to manage other
  *   sub-fields in your migration (see example below).
@@ -177,7 +182,20 @@ class FileImport extends FileCopy {
     else {
       // The parent method will take care of our download/move/copy/rename
       // We just need to final destination to create the file object
-      $final_destination = parent::transform([$source, $destination], $migrate_executable, $row, $destination_property);
+      try {
+        $final_destination = parent::transform([$source, $destination], $migrate_executable, $row, $destination_property);
+      }
+      catch (MigrateException $e) {
+        // Check if we're skipping on error
+        if ($this->configuration['skip_on_error']) {
+          $migrate_executable->saveMessage("File $source could not be imported to $destination. Operation failed with message: " . $e->getMessage());
+          return NULL;
+        }
+        else {
+          // Pass the error back on again
+          throw new MigrateException($e->getMessage());
+        }
+      }
     }
 
     if ($final_destination) {
