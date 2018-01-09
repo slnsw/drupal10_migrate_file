@@ -3,14 +3,11 @@
 namespace Drupal\migrate_file\Plugin\migrate\process;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StreamWrapper\LocalStream;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Plugin\migrate\process\FileCopy;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -29,11 +26,12 @@ use GuzzleHttp\Exception\ConnectException;
  *   'public://bar.txt'.
  *
  * Optional configuration keys:
- * - destination: (recommended) The destination path or URI, e.g. '/path/to/bar/' or
- *   'public://foo.txt'. To provide a directory path (to which the file is saved
- *   using its original name), a trailing slash *must* be used to differentiate
- *   it from being a filename. If no trailing slash is provided the path will be
- *   assumed to be the destination filename. Defaults to "public://".
+ * - destination: (recommended) The destination path or URI, example:
+ *   '/path/to/bar/' or 'public://foo.txt'. To provide a directory path (to
+ *   which the file is saved using its original name), a trailing slash *must*
+ *   be used to differentiate it from being a filename. If no trailing slash
+ *   is provided the path will be assumed to be the destination filename.
+ *   Defaults to "public://".
  * - uid: The uid to attribute the file entity to. Defaults to 0
  * - move: Boolean, if TRUE, move the file, otherwise copy the file. Only
  *   applies if the source file is local. If the source file is remote it will
@@ -50,14 +48,14 @@ use GuzzleHttp\Exception\ConnectException;
  *   check for existence. Defaults to FALSE.
  * - skip_on_error: (optional) Boolean, if TRUE, this field will be skipped
  *   if any error occurs during the file import (including missing source
- *   files). Otherwise, the row will fail with an error. Defaults to FALSE
+ *   files). Otherwise, the row will fail with an error. Defaults to FALSE.
  * - id_only: (optional) Boolean, if TRUE, the process will return just the id
  *   instead of a entity reference array. Useful if you want to manage other
  *   sub-fields in your migration (see example below).
  *
  * The destination and uid configuration fields support copying destination
  * values. These are indicated by a starting @ sign. Values using @ must be
- * wrapped in quotes. (the same as it works with the 'source' key)
+ * wrapped in quotes. (the same as it works with the 'source' key).
  *
  * @see Drupal\migrate\Plugin\migrate\process\Get
  *
@@ -99,7 +97,6 @@ use GuzzleHttp\Exception\ConnectException;
  *     id_only: true
  *   field_image/alt: image
  *
- *
  * @endcode
  *
  * @see \Drupal\migrate\Plugin\MigrateProcessInterface
@@ -132,13 +129,13 @@ class FileImport extends FileCopy {
       return NULL;
     }
 
-    // Get our file entity values
+    // Get our file entity values.
     $source = $value;
     $destination = $this->getPropertyValue($this->configuration['destination'], $row) ?: 'public://';
     $uid = $this->getPropertyValue($this->configuration['uid'], $row) ?: 0;
     $id_only = $this->configuration['id_only'];
 
-    // If there's no we skip
+    // If there's no we skip.
     if (!$source) {
       return NULL;
     }
@@ -149,7 +146,7 @@ class FileImport extends FileCopy {
       return NULL;
     }
 
-    // Build the destination file uri (in case only a directory was provided)
+    // Build the destination file uri (in case only a directory was provided).
     $destination = $this->getDestinationFilePath($source, $destination);
     if (!$this->fileSystem->uriScheme($destination)) {
       if (empty($destination)) {
@@ -158,11 +155,11 @@ class FileImport extends FileCopy {
     }
     $final_destination = '';
 
-    // If we're in re-use mode, reuse the file if it exists
+    // If we're in re-use mode, reuse the file if it exists.
     if ($this->getOverwriteMode() == FILE_EXISTS_ERROR && $this->isLocalUri($destination) && is_file($destination)) {
-      // Look for a file entity with the destination uri
+      // Look for a file entity with the destination uri.
       if ($files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(['uri' => $destination])) {
-        // Grab the first file entity with a matching uri
+        // Grab the first file entity with a matching uri.
         // @todo: Any logic for preference when there are multiple?
         $file = reset($files);
         // Set to permanent if the file in the database is set to temporary.
@@ -180,8 +177,8 @@ class FileImport extends FileCopy {
       }
     }
     else {
-      // The parent method will take care of our download/move/copy/rename
-      // We just need to final destination to create the file object
+      // The parent method will take care of our download/move/copy/rename.
+      // We just need to final destination to create the file object.
       try {
         $final_destination = parent::transform([$source, $destination], $migrate_executable, $row, $destination_property);
       }
@@ -192,7 +189,7 @@ class FileImport extends FileCopy {
           return NULL;
         }
         else {
-          // Pass the error back on again
+          // Pass the error back on again.
           throw new MigrateException($e->getMessage());
         }
       }
@@ -275,10 +272,10 @@ class FileImport extends FileCopy {
    * Build the destination filename.
    *
    * @param string $source
-   *   The source URI
+   *   The source URI.
    *
    * @param string $destination
-   *   The destination URI
+   *   The destination URI.
    *
    * @return boolean
    *   Whether or not the file exists.

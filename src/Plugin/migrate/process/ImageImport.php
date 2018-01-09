@@ -3,17 +3,11 @@
 namespace Drupal\migrate_file\Plugin\migrate\process;
 
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StreamWrapper\LocalStream;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
-use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
-use Drupal\migrate\Plugin\migrate\process\FileCopy;
-use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
 use Drupal\file\Entity\File;
-use Drupal\migrate_file\Plugin\migrate\process\FileImport;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Exception\ClientException;
 
@@ -98,13 +92,13 @@ class ImageImport extends FileImport {
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
 
-    // Ignore this setting
+    // Ignore this setting.
     $this->configuration['id_only'] = FALSE;
-    // Run the parent transform to do all the file handling
+    // Run the parent transform to do all the file handling.
     $value = parent::transform($value, $migrate_executable, $row, $destination_property);
 
     if ($value && is_array($value)) {
-      // Add the image field specific sub fields
+      // Add the image field specific sub fields.
       foreach (['title', 'alt', 'width', 'height'] as $key) {
         if ($property = $this->configuration[$key]) {
           if ($property == '!file') {

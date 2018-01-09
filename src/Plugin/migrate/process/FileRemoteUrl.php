@@ -3,7 +3,6 @@
 namespace Drupal\migrate_file\Plugin\migrate\process;
 
 use Drupal\migrate\ProcessPluginBase;
-use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Row;
 use Drupal\file\Entity\File;
@@ -23,7 +22,7 @@ use Drupal\file\Entity\File;
  * @see https://www.drupal.org/project/remote_stream_wrapper
  *
  * Available configuration keys:
- * - uid: (optional) The uid to attribute the file entity to. Defaults to 0
+ * - uid: (optional) The uid to attribute the file entity to. Defaults to 0.
  *
  * Example:
  *
