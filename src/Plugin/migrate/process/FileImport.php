@@ -6,6 +6,7 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\MigrateSkipProcessException;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Plugin\migrate\process\FileCopy;
 use Drupal\migrate\Row;
@@ -186,7 +187,7 @@ class FileImport extends FileCopy {
         // Check if we're skipping on error
         if ($this->configuration['skip_on_error']) {
           $migrate_executable->saveMessage("File $source could not be imported to $destination. Operation failed with message: " . $e->getMessage());
-          return NULL;
+          throw new MigrateSkipProcessException($e->getMessage());
         }
         else {
           // Pass the error back on again.
