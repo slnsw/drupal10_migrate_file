@@ -7,13 +7,14 @@ use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\migrate\MigrateException;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\MigrateSkipProcessException;
-use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Plugin\migrate\process\FileCopy;
+use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Row;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\ServerException;
 
 /**
  * Imports a file from an local or external source.
@@ -171,6 +172,7 @@ class FileImport extends FileCopy {
           $file->setPermanent();
           $file->save();
         }
+
         return $id_only ? $file->id() : ['target_id' => $file->id()];
       }
       else {
@@ -303,6 +305,9 @@ class FileImport extends FileCopy {
       try {
         \Drupal::httpClient()->head($path);
         return TRUE;
+      }
+      catch (ServerException $e) {
+        return FALSE;
       }
       catch (ClientException $e) {
         return FALSE;
