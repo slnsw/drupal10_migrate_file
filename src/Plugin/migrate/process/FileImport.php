@@ -176,6 +176,7 @@ class FileImport extends FileCopy {
       'uid' => NULL,
       'skip_on_missing_source' => FALSE,
       'source_check_method' => 'HEAD',
+      'skip_on_error' => FALSE,
       'id_only' => FALSE,
       'guzzle_options' => [],
     ];
