@@ -208,7 +208,7 @@ class FileImport extends FileCopy {
         // This means that the file was probably set to be removed during
         // garbage collection, which we don't want to happen anymore since we're
         // using it.
-        if (!$file->isTemporary()) {
+        if ($file->isTemporary()) {
           $file->setPermanent();
           $file->save();
         }
