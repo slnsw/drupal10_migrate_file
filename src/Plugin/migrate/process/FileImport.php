@@ -41,7 +41,7 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *   To provide a directory path (to which the file is saved using its original
  *   name), a trailing slash *must* be used to differentiate it from being a
  *   filename. If no trailing slash is provided the path will be assumed to be
- *   the destination filename. Defaults to
+ *   the destination filename.
  * - uid: The uid to attribute the file entity to. Defaults to 0
  * - move: Boolean, if TRUE, move the file, otherwise copy the file. Only
  *   applies if the source file is local. If the source file is remote it will
@@ -56,12 +56,20 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *   that if you are importing a lot of remote files, this check will greatly
  *   reduce the speed of your import as it requires an http request per file to
  *   check for existence. Defaults to FALSE.
- * - skip_on_error: (optional) Boolean, if TRUE, this field will be skipped
- *   if any error occurs during the file import (including missing source
- *   files). Otherwise, the row will fail with an error. Defaults to FALSE.
- * - id_only: (optional) Boolean, if TRUE, the process will return just the id
- *   instead of a entity reference array. Useful if you want to manage other
- *   sub-fields in your migration (see example below).
+ * - source_check_method: The HTTP Request method used to check if he file
+ *   exists when skip_on_missing_source is set. Either HEAD or GET. A HEAD
+ *   request is faster than a GET since the file isn't actually downloaded,
+ *   but not all servers support it. Switch to GET if necessary.
+ * - skip_on_error: Boolean, if TRUE, this field will be skipped if any error
+ *   occurs during the file import (including missing source files). Otherwise,
+ *   the row will fail with an error. Defaults to FALSE.
+ * - guzzle_options: Guzzle options which will be used for requests if the
+ *   source file is a remote file. This will be used for the file check if
+ *   skip_on_missing_source is set, as well as for the file Download itself.
+ *   @see Drupal\migrate\Plugin\migrate\process\Download
+ * - id_only: Boolean, if TRUE, the process will return just the id instead of
+ *   an entity reference array. Useful if you want to manage other sub-fields
+ *   in your migration (see example below).
  *
  * The destination and uid configuration fields support referencing destination
  * values. These are indicated by a prifixing with the @ character. Values
@@ -167,7 +175,9 @@ class FileImport extends FileCopy {
       'destination' => NULL,
       'uid' => NULL,
       'skip_on_missing_source' => FALSE,
+      'source_check_method' => 'HEAD',
       'id_only' => FALSE,
+      'guzzle_options' => [],
     ];
     parent::__construct($configuration, $plugin_id, $plugin_definition, $stream_wrappers, $file_system, $download_plugin);
   }
@@ -353,7 +363,9 @@ class FileImport extends FileCopy {
     }
     else {
       try {
-        \Drupal::httpClient()->head($path);
+        $method = !empty($this->configuration['source_check_method']) ? $this->configuration['source_check_method'] : 'HEAD';
+        $options = !empty($this->configuration['guzzle_options']) ? $this->configuration['guzzle_options'] : [];
+        \Drupal::httpClient()->request($method, $path, $options);
         return TRUE;
       }
       catch (ServerException $e) {
