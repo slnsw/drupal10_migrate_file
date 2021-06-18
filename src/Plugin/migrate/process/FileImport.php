@@ -29,12 +29,19 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *   'public://bar.txt'.
  *
  * Optional configuration keys:
- * - destination: (recommended) The destination path or URI, example:
- *   '/path/to/bar/' or 'public://foo.txt'. To provide a directory path (to
- *   which the file is saved using its original name), a trailing slash *must*
- *   be used to differentiate it from being a filename. If no trailing slash
- *   is provided the path will be assumed to be the destination filename.
- *   Defaults to "public://".
+ * - destination: (recommended) The destination path or URI to import the file
+ *   to. If no destination is set, it will default to "public://".
+ *   The destination property works like the source in that you can reference
+ *   source or destination properties for its value. This allows you to build
+ *   dynamic destination paths based on source or destination values (see the
+ *   "Dynamic File Path Destinations" section below for an example). However,
+ *   this means if you want to assign a static destination value in your
+ *   migration, you will need to use a constant.
+ *   @see https://www.drupal.org/docs/8/api/migrate-api/migrate-process/constant-values
+ *   To provide a directory path (to which the file is saved using its original
+ *   name), a trailing slash *must* be used to differentiate it from being a
+ *   filename. If no trailing slash is provided the path will be assumed to be
+ *   the destination filename. Defaults to
  * - uid: The uid to attribute the file entity to. Defaults to 0
  * - move: Boolean, if TRUE, move the file, otherwise copy the file. Only
  *   applies if the source file is local. If the source file is remote it will
@@ -56,9 +63,10 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *   instead of a entity reference array. Useful if you want to manage other
  *   sub-fields in your migration (see example below).
  *
- * The destination and uid configuration fields support copying destination
- * values. These are indicated by a starting @ sign. Values using @ must be
- * wrapped in quotes. (the same as it works with the 'source' property).
+ * The destination and uid configuration fields support referencing destination
+ * values. These are indicated by a prifixing with the @ character. Values
+ * using @ must be wrapped in quotes. (the same as it works with the 'source'
+ * property).
  *
  * @see Drupal\migrate\Plugin\migrate\process\Get
  *
@@ -115,6 +123,8 @@ use Drupal\Core\StreamWrapper\StreamWrapperManager;
  *     uid: @uid
  *     id_only: true
  *   field_image/alt: image
+ *   #
+ *   # Dynamic File Path Destinations:
  *   #
  *   # Since the destination property can accept a destination value, you can
  *   # create dynamic filepaths. First you create a temporary field (you can
