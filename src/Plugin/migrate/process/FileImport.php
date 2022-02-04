@@ -245,6 +245,18 @@ class FileImport extends FileCopy {
       // We just need to final destination to create the file object.
       try {
         $final_destination = parent::transform([$source, $destination], $migrate_executable, $row, $destination_property);
+
+        // If this was a replace, there should be an existing file entity for it
+        // And if so, we return it. Otherwise, one will be created further down.
+        if ($files = \Drupal::entityTypeManager()->getStorage('file')->loadByProperties(['uri' => $final_destination])) {
+          $file = reset($files);
+          if ($file->isTemporary()) {
+            $file->setPermanent();
+            $file->save();
+          }
+
+          return $id_only ? $file->id() : ['target_id' => $file->id()];
+        }
       }
       catch (MigrateException $e) {
         // Check if we're skipping on error
