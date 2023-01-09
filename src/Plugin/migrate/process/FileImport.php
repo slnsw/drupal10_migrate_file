@@ -10,6 +10,7 @@ use Drupal\migrate\MigrateSkipProcessException;
 use Drupal\migrate\Plugin\migrate\process\FileCopy;
 use Drupal\migrate\Plugin\MigrateProcessInterface;
 use Drupal\migrate\Row;
+use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Exception\ClientException;
@@ -276,7 +277,7 @@ class FileImport extends FileCopy {
       $file = File::create([
         'uri' => $final_destination,
         'uid' => $uid,
-        'status' => FILE_STATUS_PERMANENT,
+        'status' => FileInterface::STATUS_PERMANENT,
       ]);
       $file->save();
       return $id_only ? $file->id() : ['target_id' => $file->id()];

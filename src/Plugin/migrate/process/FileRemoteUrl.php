@@ -5,6 +5,7 @@ namespace Drupal\migrate_file\Plugin\migrate\process;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\MigrateExecutableInterface;
 use Drupal\migrate\Row;
+use Drupal\file\FileInterface;
 use Drupal\file\Entity\File;
 
 /**
@@ -69,7 +70,7 @@ class FileRemoteUrl extends ProcessPluginBase {
     $file = File::create([
       'uri' => $value,
       'uid' => $this->configuration['uid'],
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $file->save();
 
